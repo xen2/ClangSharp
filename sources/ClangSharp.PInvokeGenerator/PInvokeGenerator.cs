@@ -190,7 +190,24 @@ namespace ClangSharp
 
                     if (!_config.TraversalNames.Contains(fileName))
                     {
-                        continue;
+                        // Check against path
+                        bool found = false;
+                        foreach (var traversalName in _config.TraversalNames)
+                        {
+                            var directory = Path.GetDirectoryName(fileName);
+                            while (directory != null)
+                            {
+                                if (_config.TraversalNames.Contains(directory))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                                directory = Directory.GetParent(directory)?.FullName;
+                            }
+
+                        }
+                        if (!found)
+                            continue;
                     }
                 }
                 Visit(decl);
@@ -210,7 +227,7 @@ namespace ClangSharp
 
             if (level != DiagnosticLevel.Info)
             {
-                Debugger.Break();
+                //Debugger.Break();
             }
         }
 
@@ -1233,7 +1250,8 @@ namespace ClangSharp
                 }
                 var functionType = (FunctionType)type;
 
-                var body = functionDecl.Body;
+                Stmt body = null;
+                //var body = functionDecl.Body;
 
                 if (body is null)
                 {
@@ -1330,6 +1348,10 @@ namespace ClangSharp
             else if (namedDecl is ValueDecl valueDecl)
             {
                 VisitValueDecl(valueDecl);
+            }
+            else if (namedDecl is NamespaceDecl namespaceDecl)
+            {
+                VisitNamespaceDecl(namespaceDecl);
             }
             else
             {
@@ -1598,6 +1620,11 @@ namespace ClangSharp
 
         private void VisitTypeDecl(TypeDecl typeDecl)
         {
+            if (typeDecl.Name != "FbxScene")
+            {
+                return;
+            }
+
             if (typeDecl is TagDecl tagDecl)
             {
                 VisitTagDecl(tagDecl);
@@ -1717,6 +1744,14 @@ namespace ClangSharp
             {
                 Visit(unaryOperator.SubExpr);
                 _outputBuilder.Write(unaryOperator.Opcode);
+            }
+        }
+
+        private void VisitNamespaceDecl(NamespaceDecl namespaceDecl)
+        {
+            foreach (var decl in namespaceDecl.Decls)
+            {
+                Visit(decl);
             }
         }
 

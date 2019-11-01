@@ -217,7 +217,7 @@ namespace ClangSharp
                 default:
                 {
                     Debug.WriteLine($"Unhandled declaration kind: {handle.KindSpelling}.");
-                    Debugger.Break();
+                    //Debugger.Break();
 
                     result = new Decl(handle, handle.Kind);
                     break;
